@@ -42,6 +42,14 @@ const IssueForm: React.FC = () => {
     setSubmitting(true);
     try {
       const imageUrl = image ? URL.createObjectURL(image) : undefined;
+      
+      // Require issue proof for all submissions
+      if (!imageUrl) {
+        alert('Please upload a photo showing the issue as proof.');
+        setSubmitting(false);
+        return;
+      }
+      
       if (status === 'completed' && !imageUrl) {
         alert('Please capture and upload a photo to mark as completed.');
         setSubmitting(false);
@@ -137,11 +145,18 @@ const IssueForm: React.FC = () => {
           </div>
         </div>
         <LocationCapture onCapture={(c, addr)=> { setCoords(c); setAddress(addr || null); }} />
+        
+        <div className="section span-2">
+          <h4 className="section-title">Upload Issue Proof *</h4>
+          <UploadImage onImageUpload={(f) => { setImage(f); setHasPhoto(!!f); }} />
+          <div className="hint">Required: Upload a photo showing the issue. This serves as proof of the problem.</div>
+        </div>
+
         {status === 'completed' && (
           <div className="section span-2">
-            <h4 className="section-title">Upload Proof</h4>
+            <h4 className="section-title">Upload Completion Proof *</h4>
             <UploadImage onImageUpload={(f) => { setImage(f); setHasPhoto(!!f); }} />
-            <div className="hint">Required when completed. Photos are compressed for faster upload.</div>
+            <div className="hint">Required when completed. Upload a photo showing the issue has been resolved.</div>
           </div>
         )}
         <div className="actions span-2">

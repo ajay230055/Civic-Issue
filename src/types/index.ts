@@ -15,14 +15,20 @@ export interface Issue {
     ward?: string;
     district?: string;
   };
-  images: string[];
+  images: string[]; // Issue proof images
+  completionProof?: string[]; // Completion proof images
   reporterId: string;
   reporterName: string;
+  completedById?: string; // User who completed the issue
+  completedByName?: string; // Name of user who completed the issue
+  completedByRole?: 'user' | 'official' | 'teacher'; // Role of who completed it
+  completionReward?: number; // Reward given to the completer
   assignedOfficialId?: string;
   assignedOfficialName?: string;
   createdAt: Date;
   updatedAt: Date;
   resolvedAt?: Date;
+  completedAt?: Date; // When the issue was marked as completed
   estimatedResolutionDate?: Date;
   comments: Comment[];
   tags: string[];
@@ -134,4 +140,26 @@ export interface Notification {
   issueId?: string;
   isRead: boolean;
   createdAt: Date;
+}
+
+export interface CivicHour {
+  id: string;
+  title: string;
+  description: string;
+  schoolName: string;
+  teacherId: string;
+  teacherName: string;
+  images: string[]; // Civic hour activity images
+  proofImages: string[]; // Proof of civic hour completion
+  date: Date;
+  duration: number; // Duration in hours
+  category: 'community_service' | 'environmental' | 'education' | 'health' | 'other';
+  status: 'pending' | 'verified' | 'rejected';
+  verifiedById?: string;
+  verifiedByName?: string;
+  verifiedAt?: Date;
+  verificationNotes?: string;
+  rewardPoints?: number;
+  createdAt: Date;
+  updatedAt: Date;
 }

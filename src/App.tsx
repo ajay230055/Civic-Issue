@@ -13,6 +13,8 @@ import { ToastProvider } from './context/ToastContext';
 import MyIssues from './pages/MyIssues';
 import Leaderboard from './pages/Leaderboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import OfficialDashboard from './pages/OfficialDashboard';
+import TeacherDashboard from './pages/TeacherDashboard';
 
 const Header: React.FC = () => {
   const { token, role, username, logout } = useAuth();
@@ -57,6 +59,8 @@ const App: React.FC = () => {
                 <Route path="/issues/:id" element={<ProtectedRoute><IssueDetail /></ProtectedRoute>} />
                 <Route path="/my" element={<ProtectedRoute><MyIssues /></ProtectedRoute>} />
                 <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+                <Route path="/official" element={<ProtectedRoute><OfficialDashboard /></ProtectedRoute>} />
+                <Route path="/teacher" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
               </Routes>
             </div>
           </ToastProvider>

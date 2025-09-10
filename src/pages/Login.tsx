@@ -32,7 +32,13 @@ const Login: React.FC = () => {
         const res = await login({ role, id, email, username, password });
         auth.login({ token: res.token, role: res.role, username });
         setMessage('Logged in as ' + res.role);
-        navigate('/home');
+        if (res.role === 'official') {
+          navigate('/official');
+        } else if (res.role === 'teacher') {
+          navigate('/teacher');
+        } else {
+          navigate('/home');
+        }
       }
     } catch (err) {
       setMessage('Action failed');

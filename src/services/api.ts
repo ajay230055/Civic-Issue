@@ -1,4 +1,4 @@
-import { Issue, LoginCredentials, RegistrationData, Comment, IssueStatus, IssuePriority, IssueCategory } from '../types';
+import { Issue, LoginCredentials, RegistrationData, Comment, IssueStatus, IssuePriority, IssueCategory, CivicHour } from '../types';
 
 const STORAGE_ISSUES = 'issues_store_v1';
 
@@ -131,6 +131,70 @@ export const assignOfficial = async (issueId: string, officialId: string, offici
   return updated;
 };
 
+export const completeIssue = async (
+  issueId: string, 
+  completionProof: string[], 
+  completedById: string, 
+  completedByName: string,
+  completedByRole: 'user' | 'official' | 'teacher' = 'user'
+): Promise<Issue> => {
+  const issues = readIssues();
+  const idx = issues.findIndex((i) => i.id === issueId);
+  if (idx === -1) throw new Error('Issue not found');
+  
+  const issue = issues[idx];
+  
+  // Calculate completion reward
+  const getCompletionReward = (): number => {
+    const baseReward = (() => {
+      switch (issue.category) {
+        case 'sanitation': return 15;
+        case 'waste_management': return 18;
+        case 'water_supply': return 20;
+        case 'electricity': return 20;
+        case 'roads': return 25;
+        case 'infrastructure': return 22;
+        case 'parks': return 12;
+        case 'education': return 15;
+        case 'healthcare': return 30;
+        case 'security': return 35;
+        default: return 10;
+      }
+    })();
+
+    const priorityMultiplier = (() => {
+      switch (issue.priority) {
+        case 'critical': return 1.5;
+        case 'high': return 1.3;
+        case 'medium': return 1.1;
+        case 'low': return 1.0;
+        default: return 1.0;
+      }
+    })();
+
+    return Math.round(baseReward * priorityMultiplier);
+  };
+
+  const completionReward = getCompletionReward();
+  const now = new Date();
+  
+  const updated: Issue = {
+    ...issue,
+    status: 'completed' as IssueStatus,
+    completionProof,
+    completedById,
+    completedByName,
+    completedByRole,
+    completionReward,
+    completedAt: now,
+    updatedAt: now,
+  };
+  
+  issues[idx] = updated;
+  writeIssues(issues);
+  return updated;
+};
+
 export const reverseGeocode = async (lat: number, lon: number): Promise<string> => {
   try {
     const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`;
@@ -153,4 +217,76 @@ export const login = async (credentials: LoginCredentials) => {
 
 export const registerUser = async (data: RegistrationData) => {
   return { success: true };
+};
+
+// Civic Hour API functions
+const STORAGE_CIVIC_HOURS = 'civic_hours_store_v1';
+
+function readCivicHours(): CivicHour[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_CIVIC_HOURS);
+    if (!raw) return [];
+    const arr = JSON.parse(raw) as CivicHour[];
+    return arr.map((ch) => ({
+      ...ch,
+      date: new Date(ch.date),
+      createdAt: new Date(ch.createdAt),
+      updatedAt: new Date(ch.updatedAt),
+      verifiedAt: ch.verifiedAt ? new Date(ch.verifiedAt) : undefined,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+function writeCivicHours(civicHours: CivicHour[]): void {
+  localStorage.setItem(STORAGE_CIVIC_HOURS, JSON.stringify(civicHours));
+}
+
+export const fetchCivicHours = async (): Promise<CivicHour[]> => {
+  return readCivicHours();
+};
+
+export const submitCivicHour = async (civicHourData: Omit<CivicHour, 'id' | 'createdAt' | 'updatedAt'>): Promise<CivicHour> => {
+  const civicHours = readCivicHours();
+  const id = Math.random().toString(36).slice(2);
+  const now = new Date();
+  
+  const newCivicHour: CivicHour = {
+    id,
+    ...civicHourData,
+    createdAt: now,
+    updatedAt: now,
+  };
+  
+  civicHours.unshift(newCivicHour);
+  writeCivicHours(civicHours);
+  return newCivicHour;
+};
+
+export const verifyCivicHour = async (
+  civicHourId: string,
+  status: 'verified' | 'rejected',
+  verifiedById: string,
+  verifiedByName: string,
+  verificationNotes?: string
+): Promise<CivicHour> => {
+  const civicHours = readCivicHours();
+  const idx = civicHours.findIndex((ch) => ch.id === civicHourId);
+  if (idx === -1) throw new Error('Civic hour not found');
+  
+  const now = new Date();
+  const updated: CivicHour = {
+    ...civicHours[idx],
+    status,
+    verifiedById,
+    verifiedByName,
+    verifiedAt: now,
+    verificationNotes,
+    updatedAt: now,
+  };
+  
+  civicHours[idx] = updated;
+  writeCivicHours(civicHours);
+  return updated;
 };
