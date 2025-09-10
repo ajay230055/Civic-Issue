@@ -32,6 +32,7 @@ const Login: React.FC = () => {
         const res = await login({ role, id, email, username, password });
         auth.login({ token: res.token, role: res.role, username });
         setMessage('Logged in as ' + res.role);
+<<<<<<< HEAD
         if (res.role === 'official') {
           navigate('/official');
         } else if (res.role === 'teacher') {
@@ -39,6 +40,15 @@ const Login: React.FC = () => {
         } else {
           navigate('/home');
         }
+=======
+        /*if (role === 'official') {
+          window.location.href = "https://lovable.dev/projects/3a9ef3b7-c74b-4d01-a9ca-25064610db09"; 
+          return; // stop execution so it won’t navigate to /home
+        }*/
+
+
+        navigate('/home');
+>>>>>>> 0a2e1db2362039c08d0d63692f33fd7a0c408c0c
       }
     } catch (err) {
       setMessage('Action failed');
